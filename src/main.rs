@@ -1,14 +1,25 @@
+use std::f32::consts::PI;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_rapier2d::prelude::*;
+
+
+const WALL_RADIUS: f32 = 400.;
+const WALL_NUM_SEGMENTS: u8 = 16;
+const WALL_COLOR: Color = Color::rgb(0.5, 0.5, 1.0);
 
 const TIME_STEP: f32 = 1.0 / 60.0;
-const BOUNDS: Vec2 = Vec2::new(1200.0, 640.0);
+const BOUNDS: Vec2 = Vec2::new(WALL_RADIUS * 2.0, WALL_RADIUS * 2.0);
+
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .add_systems(Startup, setup)
-        .add_systems(FixedUpdate, (player_movement_system))
+        .add_systems(Startup, setup_physics)
+        .add_systems(FixedUpdate, player_movement_system)
         .run();
 }
 
@@ -77,4 +88,28 @@ fn player_movement_system(
     // bound the ship within the invisible level bounds
     let extents = Vec3::from((BOUNDS / 2.0, 0.0));
     transform.translation = transform.translation.min(extents).max(-extents);
+}
+
+
+fn setup_physics(mut commands: Commands) {
+
+    for i in 0..WALL_NUM_SEGMENTS {
+        let radian: f32 = PI * 2.0 / (WALL_NUM_SEGMENTS as f32) * (i as f32);
+        let size: f32 = PI * 2.0 * WALL_RADIUS / (WALL_NUM_SEGMENTS as f32);
+
+        let mut pos = Transform::from_xyz(WALL_RADIUS * f32::cos(radian), WALL_RADIUS * f32::sin(radian), 0.0);
+        pos.rotate_z(radian);
+
+        /* Create the ground. */
+        commands
+            .spawn(Collider::cuboid(10.0, size / 2.0))
+            .insert(TransformBundle::from(pos));
+    }
+
+    /* Create the bouncing ball. */
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::ball(50.0))
+        .insert(Restitution::coefficient(0.7))
+        .insert(TransformBundle::from(Transform::from_xyz(100.0, 300.0, 0.0)));
 }
