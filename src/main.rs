@@ -21,19 +21,25 @@ struct Player {
 }
 
 fn setup(
-    mut commands: Commands,
+    mut commands: Commands,  asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn(Camera2dBundle::default());
+    let player_handle = asset_server.load("../assets/textures/playerV001.png");
 
     // Circle
-    commands.spawn(( MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-        material: materials.add(ColorMaterial::from(Color::PURPLE)),
-        transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
+    //commands.spawn(( MaterialMesh2dBundle {
+    //    mesh: meshes.add(shape::Circle::new(50.).into()).into(),
+    //    material: materials.add(ColorMaterial::from(Color::PURPLE)),
+  //    transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
+    //    ..default()
+    //},
+    commands.spawn(( SpriteBundle {
+        texture: player_handle,
         ..default()
-    }, Player {
+    }, 
+    Player {
         movement_speed: 500.0,
         rotation_speed: f32::to_radians(360.0),
     } ));
