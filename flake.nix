@@ -60,7 +60,9 @@
               ;
             };
 
-            buildInputs = [ ];
+            buildInputs = [ ] ++ lib.optionals pkgs.stdenv.isDarwin [
+              pkgs.libiconv
+            ];
             nativeBuildInputs = with pkgs; [ clang lld ];
 
             strictDeps = true;
