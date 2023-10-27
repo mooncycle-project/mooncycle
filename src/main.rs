@@ -14,6 +14,7 @@ fn main() {
 
 #[derive(Component)]
 struct Player {
+    /// test dp
     /// linear speed in meters per second
     movement_speed: f32,
     /// rotation speed in radians per second
