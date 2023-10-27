@@ -6,7 +6,7 @@ const BOUNDS: Vec2 = Vec2::new(1200.0, 640.0);
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-.insert_resource(FixedTime::new_from_secs(TIME_STEP))
+        .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .add_systems(Startup, setup)
         .add_systems(FixedUpdate, (player_movement_system))
         .run();
@@ -46,8 +46,13 @@ fn player_movement_system(
 ) {
     let (ship, mut transform) = query.single_mut();
 
-    let mut rotation_factor = 0.0;
-    let mut movement_factor = 0.0;
+    let mut rotation_factor = 0.2;
+    let mut movement_factor = 0.5;
+
+    if keyboard_input.pressed(KeyCode::Up) {
+        movement_factor = 1.0;
+        rotation_factor = 0.0;
+    }
 
     if keyboard_input.pressed(KeyCode::Left) {
         rotation_factor += 1.0;
@@ -55,10 +60,6 @@ fn player_movement_system(
 
     if keyboard_input.pressed(KeyCode::Right) {
         rotation_factor -= 1.0;
-    }
-
-    if keyboard_input.pressed(KeyCode::Up) {
-        movement_factor += 1.0;
     }
 
     // update the ship rotation around the Z axis (perpendicular to the 2D plane of the screen)
