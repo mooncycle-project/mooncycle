@@ -20,7 +20,7 @@ fn main() {
         .insert_resource(RapierConfiguration { gravity: Vec2::new(0.0, 0.0), ..default()})
         .add_systems(Startup, setup)
         .add_systems(Startup, setup_physics)
-        .add_systems(FixedUpdate, player_movement_system)
+        .add_systems(FixedUpdate, ( player_movement_system, apply_forces ))
         .run();
 }
 
@@ -108,5 +108,20 @@ fn setup_physics(mut commands: Commands) {
             linvel: Vec2::ONE,
             angvel: 0.0
         })
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+//         .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)));
+// =======
+        .insert(TransformBundle::from(Transform::from_xyz(100.0, 300.0, 0.0)))
+        .insert(AdditionalMassProperties::Mass(1.0))
+        .insert(ExternalForce {
+            force: Vec2::new(0.0, 0.0),
+            torque: 0.0,
+        })
+        .insert(Damping { linear_damping: 0.5, angular_damping: 10.0 })
+        ;
+}
+
+fn apply_forces(mut ball: Query<(&Transform, &mut ExternalForce )>) {
+    let (transform, mut force) = ball.single_mut();
+    force.force = -transform.translation.truncate() * 0.5;
+    force.torque = 0.4;
 }
