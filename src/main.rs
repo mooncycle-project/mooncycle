@@ -3,16 +3,21 @@ use crate::plugins::enemy::EnemyPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::ops::Add;
-use crate::plugins::spinner::{Spinner, SpinnerPlugin};
+use bevy::render::camera::Viewport;
+use bevy::window::PresentMode;
+use crate::plugins::player::PlayerPlugin;
 
 mod plugins;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
+const VIEWPORT_WIDTH: u32 = 2000;
+const VIEWPORT_HEIGHT: u32 = 2000;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
+                present_mode: PresentMode::AutoNoVsync, // Reduces input lag.
                 fit_canvas_to_parent: true,
                 ..default()
             }),
@@ -20,6 +25,7 @@ fn main() {
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(ArenaPlugin)
+        .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(SpinnerPlugin { debug: true })
         .add_plugins(RapierDebugRenderPlugin::default())
@@ -29,9 +35,6 @@ fn main() {
             ..default()
         })
         .add_systems(Startup, setup)
-        .add_systems(Startup, setup_physics)
-        .add_systems(FixedUpdate, player_movement_system)
-        .add_systems(Update, apply_forces)
         .run();
 }
 
@@ -40,67 +43,4 @@ fn setup(
     mut commands: Commands,
 ) {
     commands.spawn(Camera2dBundle::default());
-}
-
-/// Demonstrates applying rotation and movement based on keyboard input.
-fn player_movement_system(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Spinner>,
-) {
-    let mut spinner = query.single_mut();
-
-    let mut tilt_x = 0.0;
-    let mut tilt_y = 0.0;
-    let tilt_speed = 0.05;
-
-    if keyboard_input.pressed(KeyCode::Up) {
-        tilt_y += tilt_speed;
-    }
-    if keyboard_input.pressed(KeyCode::Down) {
-        tilt_y -= tilt_speed;
-    }
-    if keyboard_input.pressed(KeyCode::Right) {
-        tilt_x += tilt_speed;
-    }
-    if keyboard_input.pressed(KeyCode::Left) {
-        tilt_x -= tilt_speed;
-    }
-
-    spinner.tilt = spinner.tilt
-        .add(Vec2::new(tilt_x, tilt_y))
-        .clamp_length_max(1.0);
-}
-
-fn setup_physics(mut commands: Commands) {
-    let radius = 50.0;
-    /* Create the bouncing ball. */
-    commands.spawn((
-        Spinner {
-            tilt: Vec2::new(0.0, 0.0),
-            radius,
-        },
-        RigidBody::Dynamic,
-        Collider::ball(radius),
-        Restitution::coefficient(0.7),
-        Velocity {
-            linvel: Vec2::ZERO,
-            angvel: 50.0,
-        },
-        TransformBundle::IDENTITY,
-        AdditionalMassProperties::Mass(10.0),
-        // ExternalForce {
-        //     force: Vec2::new(0.0, 0.0),
-        //     torque: 0.0,
-        // },
-        Damping {
-            linear_damping: 0.0,
-            angular_damping: 0.1,
-        },
-    ));
-}
-
-fn apply_forces(mut ball: Query<(&Transform, &mut ExternalForce)>) {
-    for (transform, mut force) in ball.iter_mut() {
-        force.force = -transform.translation.truncate() * 0.5;
-    }
 }
