@@ -1,11 +1,12 @@
 use crate::plugins::arena::ArenaPlugin;
 use crate::plugins::enemy::EnemyPlugin;
+use crate::plugins::player::PlayerPlugin;
+use crate::plugins::score::ScorePlugin;
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
-use std::ops::Add;
 use bevy::render::camera::Viewport;
 use bevy::window::PresentMode;
-use crate::plugins::player::PlayerPlugin;
+use bevy_rapier2d::prelude::*;
+use std::ops::Add;
 
 mod plugins;
 
@@ -27,7 +28,7 @@ fn main() {
         .add_plugins(ArenaPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
-        .add_plugins(SpinnerPlugin { debug: true })
+        .add_plugins(ScorePlugin)
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .insert_resource(RapierConfiguration {
@@ -39,8 +40,6 @@ fn main() {
 }
 
 
-fn setup(
-    mut commands: Commands,
-) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
