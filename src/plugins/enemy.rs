@@ -68,7 +68,7 @@ fn mark_dead_enemies(
     enemies: Query<(Entity, &Velocity), (With<Enemy>, Without<Dead>)>,
 ) {
     for (entity, velocity) in enemies.iter() {
-        if velocity.angvel < 1. {
+        if velocity.angvel < 0.5 {
             commands.entity(entity).insert(Dead);
         }
     }

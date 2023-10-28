@@ -1,10 +1,8 @@
 use crate::plugins::enemy::EnemyPlugin;
+use crate::plugins::arena::ArenaPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use std::f32::consts::PI;
 use std::ops::Add;
-
-mod arena_plugin;
 
 mod plugins;
 
@@ -14,6 +12,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(ArenaPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
@@ -21,7 +20,6 @@ fn main() {
             gravity: Vec2::new(0.0, 0.0),
             ..default()
         })
-        .add_plugins(arena_plugin::ArenaPlugin {})
         .add_systems(Startup, setup)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (player_movement_system, apply_forces))

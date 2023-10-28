@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::*;
 const WALL_RADIUS: f32 = 400.;
 const WALL_NUM_SEGMENTS: u8 = 16;
 
-pub struct ArenaPlugin {}
+pub struct ArenaPlugin;
 
 impl Plugin for ArenaPlugin {
     fn build(&self, app: &mut App) {
