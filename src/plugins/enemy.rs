@@ -42,6 +42,7 @@ struct Enemy;
 #[derive(Component)]
 struct Dead;
 
+
 #[derive(Event)]
 pub struct EnemyDeathEvent;
 
@@ -49,27 +50,33 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(DeathSound(asset_server.load("sounds/death.ogg")));
 }
 
-fn enemy_spawner(mut commands: Commands) {
+fn enemy_spawner(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let spawn_point = *ENEMY_SPAWN_POINTS.choose(&mut thread_rng()).unwrap();
+
+
     commands
         .spawn((Enemy, RigidBody::Dynamic))
-        .insert(Collider::cuboid(30.0, 30.0))
-        .insert(TransformBundle::from(Transform::from_translation(
-            *ENEMY_SPAWN_POINTS.choose(&mut thread_rng()).unwrap(),
-        )))
+        .insert(Collider::ball(30.0))
+        .insert(SpriteBundle {
+            texture: asset_server.load("textures/shuriken.png"),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(60.0, 60.0)),
+                ..default()
+            },
+            transform: Transform::from_translation(spawn_point),
+                ..default()
+        })
+        .insert(TransformBundle::from(Transform::from_translation(spawn_point)))
         .insert(Velocity {
             linvel: Vec2::new(
-                thread_rng().gen_range(-100.0..=100.0),
-                thread_rng().gen_range(-100.0..=100.0),
+                thread_rng().gen_range(-600.0..=600.0),
+                thread_rng().gen_range(-600.0..=600.0),
             ),
-            angvel: thread_rng().gen_range(100.0..=720.0),
+            angvel: 360.0,
         })
         .insert(GravityScale(0.5))
         .insert(Sleeping::disabled())
-        .insert(Ccd::enabled())
-        .insert(CollisionGroups::new(
-            Group::all() ^ Group::GROUP_32,
-            Group::GROUP_32,
-        ));
+        .insert(Ccd::enabled());
 }
 
 fn mark_dead_enemies(

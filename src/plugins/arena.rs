@@ -32,6 +32,10 @@ fn setup(
         /* Create the ground. */
         commands
             .spawn(Collider::cuboid(10.0, size / 2.0))
+            .insert(Restitution {
+                coefficient: 0.9,
+                combine_rule: CoefficientCombineRule::Max,
+            })
             .insert(SpriteBundle {
                 texture: asset_server.load("textures/concrete.png"),
                 sprite: Sprite {
