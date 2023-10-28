@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_fixed_timer;
 use bevy_rapier2d::prelude::*;
 use rand::seq::SliceRandom;
-use rand::thread_rng;
+use rand::{random, thread_rng, Rng};
 use std::time::Duration;
 
 const ENEMY_SPAWN_POINTS: &[Vec3] = &[
@@ -42,9 +42,7 @@ struct Enemy;
 struct Dead;
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(DeathSound(
-        asset_server.load("sounds/death.ogg"),
-    ));
+    commands.insert_resource(DeathSound(asset_server.load("sounds/death.ogg")));
 }
 
 fn enemy_spawner(mut commands: Commands) {
@@ -55,8 +53,11 @@ fn enemy_spawner(mut commands: Commands) {
             *ENEMY_SPAWN_POINTS.choose(&mut thread_rng()).unwrap(),
         )))
         .insert(Velocity {
-            linvel: Vec2::new(100., 100.),
-            angvel: 360.,
+            linvel: Vec2::new(
+                thread_rng().gen_range(-100.0..=100.0),
+                thread_rng().gen_range(-100.0..=100.0),
+            ),
+            angvel: thread_rng().gen_range(10.0..=360.0),
         })
         .insert(GravityScale(0.5))
         .insert(Sleeping::disabled())
@@ -68,7 +69,7 @@ fn mark_dead_enemies(
     enemies: Query<(Entity, &Velocity), (With<Enemy>, Without<Dead>)>,
 ) {
     for (entity, velocity) in enemies.iter() {
-        if velocity.angvel < 0.5 {
+        if velocity.angvel < 0.1 {
             commands.entity(entity).insert(Dead);
         }
     }
