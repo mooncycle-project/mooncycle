@@ -1,5 +1,5 @@
-use crate::plugins::enemy::EnemyPlugin;
 use crate::plugins::arena::ArenaPlugin;
+use crate::plugins::enemy::EnemyPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::ops::Add;
@@ -40,18 +40,6 @@ fn setup(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn(Camera2dBundle::default());
-
-    // Circle
-    // commands.spawn(( MaterialMesh2dBundle {
-    //     mesh: meshes.add(shape::Circle::new(50.).into()).into(),
-    //     material: materials.add(ColorMaterial::from(Color::PURPLE)),
-    //     transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
-    //     ..default()
-    // }, Spinner {
-    //     velocity: Vec2::new(0.0, 0.0),
-    //     rotation_speed: f32::to_radians(360.0),
-    //     tilt: Vec2::new(0.0, 0.0)
-    // } ));
 }
 
 /// Demonstrates applying rotation and movement based on keyboard input.
