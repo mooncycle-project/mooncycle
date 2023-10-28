@@ -1,8 +1,12 @@
-use std::ops::Add;
+use crate::plugins::enemy::EnemyPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use std::f32::consts::PI;
+use std::ops::Add;
 
 mod arena_plugin;
+
+mod plugins;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
 
@@ -10,6 +14,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(EnemyPlugin)
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .insert_resource(RapierConfiguration { gravity: Vec2::new(0.0, 0.0), ..default()})
@@ -71,25 +76,27 @@ fn player_movement_system(
         tilt_x -= 0.1;
     }
 
-    spinner.tilt = spinner.tilt.add(Vec2::new(tilt_x, tilt_y)).min(Vec2::ONE).max(Vec2::NEG_ONE);
+    spinner.tilt = spinner
+        .tilt
+        .add(Vec2::new(tilt_x, tilt_y))
+        .min(Vec2::ONE)
+        .max(Vec2::NEG_ONE);
     velocity.linvel = velocity.linvel.add(spinner.tilt);
 }
 
-
 fn setup_physics(mut commands: Commands) {
-
     /* Create the bouncing ball. */
     commands
         .spawn(RigidBody::Dynamic)
         .insert(Collider::ball(50.0))
         .insert(Spinner {
             rotation_speed: f32::to_radians(360.0),
-            tilt: Vec2::new(0.0, 0.0)
+            tilt: Vec2::new(0.0, 0.0),
         })
         .insert(Restitution::coefficient(0.7))
         .insert(Velocity {
             linvel: Vec2::ONE,
-            angvel: 0.0
+            angvel: 0.0,
         })
         .insert(TransformBundle::from(Transform::from_xyz(100.0, 300.0, 0.0)))
         .insert(AdditionalMassProperties::Mass(1.0))
