@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy::time::common_conditions::on_fixed_timer;
 use bevy_rapier2d::prelude::*;
 use rand::seq::SliceRandom;
-use rand::{random, thread_rng, Rng};
+use rand::{thread_rng, Rng};
 use std::time::Duration;
 
 const ENEMY_SPAWN_POINTS: &[Vec3] = &[

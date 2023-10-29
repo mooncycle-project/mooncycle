@@ -3,6 +3,7 @@ use crate::plugins::enemy::EnemyPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::ops::Add;
+use crate::plugins::spinner::{Spinner, SpinnerPlugin};
 
 mod plugins;
 
@@ -14,6 +15,7 @@ fn main() {
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(ArenaPlugin)
         .add_plugins(EnemyPlugin)
+        .add_plugins(SpinnerPlugin { debug: true })
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .insert_resource(RapierConfiguration {
@@ -22,22 +24,14 @@ fn main() {
         })
         .add_systems(Startup, setup)
         .add_systems(Startup, setup_physics)
-        .add_systems(FixedUpdate, (player_movement_system, apply_forces))
+        .add_systems(FixedUpdate, player_movement_system)
+        .add_systems(Update, apply_forces)
         .run();
 }
 
-#[derive(Component)]
-struct Spinner {
-    /// tilt in percent (0..1)
-    tilt: Vec2,
-    /// rotation speed in radians per second
-    rotation_speed: f32,
-}
 
 fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn(Camera2dBundle::default());
 }
@@ -45,64 +39,64 @@ fn setup(
 /// Demonstrates applying rotation and movement based on keyboard input.
 fn player_movement_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Spinner, &mut Transform, &mut Velocity)>,
+    mut query: Query<(&mut Spinner, &mut Velocity)>,
 ) {
-    let (mut spinner, mut transform, mut velocity) = query.single_mut();
+    let (mut spinner, mut velocity) = query.single_mut();
 
     let mut tilt_x = 0.0;
     let mut tilt_y = 0.0;
+    let tilt_speed = 0.05;
 
     if keyboard_input.pressed(KeyCode::Up) {
-        tilt_y += 0.1;
+        tilt_y += tilt_speed;
     }
     if keyboard_input.pressed(KeyCode::Down) {
-        tilt_y -= 0.1;
+        tilt_y -= tilt_speed;
     }
     if keyboard_input.pressed(KeyCode::Right) {
-        tilt_x += 0.1;
+        tilt_x += tilt_speed;
     }
     if keyboard_input.pressed(KeyCode::Left) {
-        tilt_x -= 0.1;
+        tilt_x -= tilt_speed;
     }
 
     spinner.tilt = spinner
         .tilt
         .add(Vec2::new(tilt_x, tilt_y))
-        .min(Vec2::ONE)
-        .max(Vec2::NEG_ONE);
-    velocity.linvel = velocity.linvel.add(spinner.tilt);
+        .clamp_length_max(1.0);
+    velocity.linvel = velocity.linvel.add(spinner.tilt * 10.0);
 }
 
 fn setup_physics(mut commands: Commands) {
+    let radius = 50.0;
     /* Create the bouncing ball. */
-    commands
-        .spawn(RigidBody::Dynamic)
-        .insert(Collider::ball(50.0))
-        .insert(Spinner {
-            rotation_speed: f32::to_radians(360.0),
+    commands.spawn((
+        Spinner {
             tilt: Vec2::new(0.0, 0.0),
-        })
-        .insert(Restitution::coefficient(0.7))
-        .insert(Velocity {
-            linvel: Vec2::ONE,
-            angvel: 0.0,
-        })
-        .insert(TransformBundle::from(Transform::from_xyz(
-            100.0, 300.0, 0.0,
-        )))
-        .insert(AdditionalMassProperties::Mass(1.0))
-        .insert(ExternalForce {
-            force: Vec2::new(0.0, 0.0),
-            torque: 0.0,
-        })
-        .insert(Damping {
-            linear_damping: 0.5,
-            angular_damping: 10.0,
-        });
+            radius,
+        },
+        RigidBody::Dynamic,
+        Collider::ball(radius),
+        Restitution::coefficient(0.7),
+        Velocity {
+            linvel: Vec2::ZERO,
+            angvel: 50.0,
+        },
+        TransformBundle::IDENTITY,
+        AdditionalMassProperties::Mass(10.0),
+        // ExternalForce {
+        //     force: Vec2::new(0.0, 0.0),
+        //     torque: 0.0,
+        // },
+        Damping {
+            linear_damping: 0.0,
+            angular_damping: 0.1,
+        },
+    ));
 }
 
 fn apply_forces(mut ball: Query<(&Transform, &mut ExternalForce)>) {
-    let (transform, mut force) = ball.single_mut();
-    force.force = -transform.translation.truncate() * 0.5;
-    force.torque = 0.4;
+    for (transform, mut force) in ball.iter_mut() {
+        force.force = -transform.translation.truncate() * 0.5;
+    }
 }
