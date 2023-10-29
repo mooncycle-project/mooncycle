@@ -1,10 +1,10 @@
+use crate::plugins::player::Player;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_fixed_timer;
 use bevy_rapier2d::prelude::*;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::time::Duration;
-use crate::plugins::player::Player;
 
 // vec3 coordinates of spawn point on the edge of the viewport
 
