@@ -36,6 +36,34 @@ const ENEMY_SPAWN_POINTS: &[(Vec3, Velocity)] = &[
             angvel: 5.0,
         },
     ),
+    (
+        Vec3::new(0., 1000., 0.),
+        Velocity {
+            linvel: Vec2::new(0., -150.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(1000., 0., 0.),
+        Velocity {
+            linvel: Vec2::new(-150., 0.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(0., -1000., 0.),
+        Velocity {
+            linvel: Vec2::new(0., 150.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(-1000., 0., 0.),
+        Velocity {
+            linvel: Vec2::new(150., 0.),
+            angvel: 5.0,
+        },
+    ),
 ];
 
 pub struct EnemyPlugin;
