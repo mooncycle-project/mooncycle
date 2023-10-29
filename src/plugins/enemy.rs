@@ -1,4 +1,3 @@
-use crate::plugins::player::Player;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_fixed_timer;
 use bevy_rapier2d::prelude::*;
@@ -100,22 +99,9 @@ fn enemy_spawner(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(Ccd::enabled());
 }
 
-fn mark_dead_enemies(
-    mut commands: Commands,
-    enemies: Query<(Entity, &Velocity), (With<Enemy>, Without<Dead>)>,
-    mut death_events: EventWriter<EnemyDeathEvent>,
-) {
-    for (entity, velocity) in enemies.iter() {
-        if velocity.angvel < 0.1 {
-            death_events.send(EnemyDeathEvent);
-            commands.entity(entity).insert(Dead);
-        }
-    }
-}
-
 fn play_death_sound(
     mut commands: Commands,
-    mut death_events: EventReader<EnemyDeathEvent>,
+    death_events: EventReader<EnemyDeathEvent>,
     death_sound: Res<DeathSound>,
 ) {
     if !death_events.is_empty() {

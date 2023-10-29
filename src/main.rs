@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use crate::plugins::enemy::EnemyPlugin;
 use crate::plugins::planet::PlanetPlugin;
 use crate::plugins::player::PlayerPlugin;
@@ -5,7 +7,6 @@ use crate::plugins::score::ScorePlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_rapier2d::prelude::*;
-use std::ops::Add;
 
 mod plugins;
 
@@ -37,6 +38,6 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
