@@ -3,7 +3,6 @@ use crate::plugins::planet::PlanetPlugin;
 use crate::plugins::player::PlayerPlugin;
 use crate::plugins::score::ScorePlugin;
 use bevy::prelude::*;
-use bevy::render::camera::Viewport;
 use bevy::window::PresentMode;
 use bevy_rapier2d::prelude::*;
 use std::ops::Add;

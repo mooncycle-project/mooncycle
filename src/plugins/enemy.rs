@@ -49,7 +49,7 @@ impl Plugin for EnemyPlugin {
                 FixedUpdate,
                 enemy_spawner.run_if(on_fixed_timer(Duration::from_secs(3))),
             )
-            .add_systems(Update, (player_collisions, play_death_sound, despawn_dead_enemies));
+            .add_systems(Update, (play_death_sound, despawn_dead_enemies));
     }
 }
 
