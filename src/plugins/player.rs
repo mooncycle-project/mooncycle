@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
 const PLAYER_STARTING_POSITION: Vec3 = Vec3::new(0., 0., 0.);
-const PLAYER_SIZE: f32 = 80.;
+const PLAYER_RADIUS: f32 = 50.;
 
 pub struct PlayerPlugin;
 
@@ -14,12 +14,23 @@ impl Plugin for PlayerPlugin {
 }
 
 #[derive(Component)]
-struct Player;
+pub struct Player;
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((Player, RigidBody::Dynamic))
-        .insert(Collider::ball(PLAYER_SIZE / 2.0))
+        .insert(Collider::ball(PLAYER_RADIUS))
+        .insert(ColliderMassProperties::Density(2.0))
+        .insert(ColliderMassProperties::Mass(10.0))
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(SpriteBundle {
+            texture: asset_server.load("textures/moon.png"),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(PLAYER_RADIUS * 2.2, PLAYER_RADIUS * 2.2)),
+                ..default()
+            },
+            ..default()
+        })
         .insert(TransformBundle::from(Transform::from_translation(
             PLAYER_STARTING_POSITION,
         )))

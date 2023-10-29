@@ -1,5 +1,5 @@
-use crate::plugins::arena::ArenaPlugin;
 use crate::plugins::enemy::EnemyPlugin;
+use crate::plugins::planet::PlanetPlugin;
 use crate::plugins::player::PlayerPlugin;
 use crate::plugins::score::ScorePlugin;
 use bevy::prelude::*;
@@ -11,8 +11,6 @@ use std::ops::Add;
 mod plugins;
 
 const TIME_STEP: f32 = 1.0 / 60.0;
-const VIEWPORT_WIDTH: u32 = 2000;
-const VIEWPORT_HEIGHT: u32 = 2000;
 
 fn main() {
     App::new()
@@ -24,22 +22,23 @@ fn main() {
             }),
             ..default()
         }))
+        .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
+        .add_systems(Startup, setup)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        .add_plugins(ArenaPlugin)
+        //.add_plugins(ArenaPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(ScorePlugin)
-        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(PlanetPlugin)
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .insert_resource(RapierConfiguration {
             gravity: Vec2::new(0.0, 0.0),
             ..default()
         })
-        .add_systems(Startup, setup)
         .run();
 }
 
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 }

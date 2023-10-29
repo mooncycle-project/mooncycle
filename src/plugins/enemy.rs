@@ -4,16 +4,39 @@ use bevy_rapier2d::prelude::*;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::time::Duration;
+use crate::plugins::player::Player;
 
-const ENEMY_SPAWN_POINTS: &[Vec3] = &[
-    Vec3::new(50., 50., 50.),
-    Vec3::new(50., 50., -50.),
-    Vec3::new(50., -50., 50.),
-    Vec3::new(50., -50., -50.),
-    Vec3::new(-50., 50., 50.),
-    Vec3::new(-50., 50., -50.),
-    Vec3::new(-50., -50., 50.),
-    Vec3::new(-50., -50., -50.),
+// vec3 coordinates of spawn point on the edge of the viewport
+
+const ENEMY_SPAWN_POINTS: &[(Vec3, Velocity)] = &[
+    (
+        Vec3::new(-1000., 1000., 0.),
+        Velocity {
+            linvel: Vec2::new(150., -50.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(1000., 1000., 0.),
+        Velocity {
+            linvel: Vec2::new(-150., -150.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(1000., -1000., 0.),
+        Velocity {
+            linvel: Vec2::new(-150., 150.),
+            angvel: 5.0,
+        },
+    ),
+    (
+        Vec3::new(-1000., -1000., 0.),
+        Velocity {
+            linvel: Vec2::new(150., 150.),
+            angvel: 5.0,
+        },
+    ),
 ];
 
 pub struct EnemyPlugin;
@@ -24,12 +47,9 @@ impl Plugin for EnemyPlugin {
             .add_event::<EnemyDeathEvent>()
             .add_systems(
                 FixedUpdate,
-                enemy_spawner.run_if(on_fixed_timer(Duration::from_secs(1))),
+                enemy_spawner.run_if(on_fixed_timer(Duration::from_secs(3))),
             )
-            .add_systems(
-                Update,
-                (mark_dead_enemies, play_death_sound, despawn_dead_enemies),
-            );
+            .add_systems(Update, (player_collisions, play_death_sound, despawn_dead_enemies));
     }
 }
 
@@ -42,7 +62,6 @@ struct Enemy;
 #[derive(Component)]
 struct Dead;
 
-
 #[derive(Event)]
 pub struct EnemyDeathEvent;
 
@@ -51,28 +70,30 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn enemy_spawner(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let spawn_point = *ENEMY_SPAWN_POINTS.choose(&mut thread_rng()).unwrap();
-
+    let (spawn_point, velocity) = *ENEMY_SPAWN_POINTS.choose(&mut thread_rng()).unwrap();
 
     commands
         .spawn((Enemy, RigidBody::Dynamic))
         .insert(Collider::ball(30.0))
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(SpriteBundle {
-            texture: asset_server.load("textures/shuriken.png"),
+            texture: asset_server.load("textures/asteroid.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(60.0, 60.0)),
                 ..default()
             },
             transform: Transform::from_translation(spawn_point),
-                ..default()
+            ..default()
         })
-        .insert(TransformBundle::from(Transform::from_translation(spawn_point)))
+        .insert(TransformBundle::from(Transform::from_translation(
+            spawn_point,
+        )))
         .insert(Velocity {
             linvel: Vec2::new(
-                thread_rng().gen_range(-600.0..=600.0),
-                thread_rng().gen_range(-600.0..=600.0),
+                velocity.linvel.x * thread_rng().gen_range(0.9..=1.1),
+                velocity.linvel.y * thread_rng().gen_range(0.9..=1.1),
             ),
-            angvel: 360.0,
+            angvel: velocity.angvel,
         })
         .insert(GravityScale(0.5))
         .insert(Sleeping::disabled())
