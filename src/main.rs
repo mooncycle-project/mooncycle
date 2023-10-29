@@ -11,7 +11,13 @@ const TIME_STEP: f32 = 1.0 / 60.0;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                fit_canvas_to_parent: true,
+                ..default()
+            }),
+            ..default()
+        }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(ArenaPlugin)
         .add_plugins(EnemyPlugin)
@@ -39,9 +45,9 @@ fn setup(
 /// Demonstrates applying rotation and movement based on keyboard input.
 fn player_movement_system(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Spinner, &mut Velocity)>,
+    mut query: Query<&mut Spinner>,
 ) {
-    let (mut spinner, mut velocity) = query.single_mut();
+    let mut spinner = query.single_mut();
 
     let mut tilt_x = 0.0;
     let mut tilt_y = 0.0;
@@ -60,11 +66,9 @@ fn player_movement_system(
         tilt_x -= tilt_speed;
     }
 
-    spinner.tilt = spinner
-        .tilt
+    spinner.tilt = spinner.tilt
         .add(Vec2::new(tilt_x, tilt_y))
         .clamp_length_max(1.0);
-    velocity.linvel = velocity.linvel.add(spinner.tilt * 10.0);
 }
 
 fn setup_physics(mut commands: Commands) {

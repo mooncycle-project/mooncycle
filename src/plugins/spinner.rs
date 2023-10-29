@@ -28,17 +28,21 @@ impl Plugin for SpinnerPlugin {
     fn build(&self, app: &mut App) {
         if self.debug {
             // TODO find better schedule between rapier calculated the velocity and the velocity is applied to the global transofmration
-            app.add_systems(Update, apply_limits);
+            app.add_systems(Update, update_movement);
             app.add_systems(PostUpdate, render_spinner_debug);
         }
     }
 }
 
-fn apply_limits(
-    mut spinners: Query<&mut Velocity, With<Spinner>>
+fn update_movement(
+    mut spinners: Query<(&Spinner, &mut Velocity)>
 ) {
-    for mut velocity in spinners.iter_mut() {
+    for (spinner, mut velocity) in spinners.iter_mut() {
+        // apply limits
         velocity.angvel = velocity.angvel.clamp(-MAX_ANGVEL, MAX_ANGVEL);
+
+        // tilt to speed
+        velocity.linvel += spinner.tilt * 10.0;
     }
 }
 
@@ -53,7 +57,7 @@ fn render_spinner_debug(
         // tilt
         gizmos.line_2d(
             pos,
-            pos + spinner.tilt * 30.0,
+            pos + spinner.tilt * spinner.radius,
             Color::LIME_GREEN);
 
         // health bar
