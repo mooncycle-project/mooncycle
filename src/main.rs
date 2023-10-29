@@ -3,7 +3,6 @@
 use crate::plugins::enemy::EnemyPlugin;
 use crate::plugins::planet::PlanetPlugin;
 use crate::plugins::player::PlayerPlugin;
-use crate::plugins::score::ScorePlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_rapier2d::prelude::*;
@@ -25,10 +24,9 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(0.04, 0.04, 0.04)))
         .add_systems(Startup, setup)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
-        //.add_plugins(ArenaPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(EnemyPlugin)
-        .add_plugins(ScorePlugin)
+        //.add_plugins(ScorePlugin)
         .add_plugins(PlanetPlugin)
         .insert_resource(FixedTime::new_from_secs(TIME_STEP))
         .insert_resource(RapierConfiguration {
